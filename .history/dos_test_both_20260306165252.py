@@ -1,7 +1,7 @@
 import os
 os.environ["OMP_NUM_THREADS"] = "8" 
 
-import minijclsquant as jcl
+import jclsquant as jcl
 import numpy as np
 from time import perf_counter
 from math import pi,sqrt
@@ -37,7 +37,19 @@ end=perf_counter()
 
 print('Time in cpu : '+str(end-start))
 
+start=perf_counter()
+
+dos_gpu=jcl.kpm_dos_gpu(H,int(np.sqrt(N)),random_vector)
+dos_gpu[:,1]=dos_gpu[:,1]/(N*H.bounds[1])
+
+end=perf_counter()
+
+print('Time in gpu : '+str(end-start))
+
+
 print('Integral of dos cpu : '+str(sci.integrate.simpson(dos_cpu[:,1],x=dos_cpu[:,0])))
+print('Integral of dos gpu : '+str(sci.integrate.simpson(dos_gpu[:,1],x=dos_gpu[:,0])))
 
-
+print('Sum of differences : '+str(np.sum(dos_gpu[:,1]-dos_cpu[:,1])))
+print('Mean of differences : '+str(np.mean(dos_gpu[:,1]-dos_cpu[:,1])))
 

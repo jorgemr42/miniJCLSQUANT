@@ -77,7 +77,7 @@ if [[ "$pb_choice" == "no" ]]; then
 
 fi
 pip install -e .
-python3 -c "import minijclsquant; print('minijclsquant imported successfully')"
+python3 -c "import jclsquant; print('jclsquant imported successfully')"
 if [[ "$choice" == "cpu" ]]; then
 	python3 dos_test_only_cpu.py
 elif [[ "$choice" == "gpu" ]]; then

@@ -1,7 +1,7 @@
 import os
 os.environ["OMP_NUM_THREADS"] = "8" 
 
-import minijclsquant as jcl
+import jclsquant as jcl
 import numpy as np
 from time import perf_counter
 from math import pi,sqrt
