@@ -251,9 +251,7 @@ def kpm_rho_neq(H,t_vec=None,tau=None,modifier_id=None,modifier_params=None,Temp
                 else:
   
                     n_mat[k_n,:],dos_n_mat[k_n,:]=kpm_n_dos_n(H_time,M_n,U,F,False,proyector)
-                    n_mat[k_n,:]=dos_n_mat[k_n,:]
-                    dos=kpm_n_dos_n(H_time,M_n,U,U,False,proyector)
-                    n_mat[k_n,:,1]=dos[:,1]        
+                
                 k_n+=1
 
     if k_n>=0 :
