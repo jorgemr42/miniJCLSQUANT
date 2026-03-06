@@ -16,6 +16,7 @@ rm -r build
 python Extra_funs_setup.py build_ext --inplace
 python blas_funs.py build_ext --inplace
 cd ../
+pwd
 read -p "Do you want to use  CPU or GPU? " choice
 choice=$(echo "$choice" | tr '[:upper:]' '[:lower:]')
 
