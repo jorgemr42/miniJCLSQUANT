@@ -5,7 +5,7 @@ pip install icecream
 pip install scipy
 pip install paoflow
 
-cd minijclsquant/cython_modules/
+cd jclsquant/cython_modules/
 rm blas_funs.c
 rm blas_funs.html
 rm blas_funs.cpython-310-x86_64-linux-gnu.so
@@ -22,7 +22,7 @@ choice=$(echo "$choice" | tr '[:upper:]' '[:lower:]')
 
 if [[ "$choice" == "cpu" ]]; then
     pwd
-    sed -i '/from minijclsquant\.observables_gpu import \*/d' __init__.py
+    sed -i '/from jclsquant\.observables_gpu import \*/d' __init__.py
     rm -r ./cuda_cython
     echo "Line removed for CPU mode."
 

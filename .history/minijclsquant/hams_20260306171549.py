@@ -3,7 +3,7 @@ import numpy as np
 from time import perf_counter
 import copy
 import os
-from minijclsquant.ell_matrix import *
+from jclsquant.ell_matrix import *
 import warnings
 from scipy.sparse import SparseEfficiencyWarning  # Import the warning class
 import matplotlib.pyplot as plt

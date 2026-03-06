@@ -1,11 +1,11 @@
 from .cuda_cython.obv_gpu import kpm_rho_neq_gpu_cuda,kpm_rho_neq_gpu_cuda_k,for_time_sigma_nequil_gpu,for_time_sigma_gpu,rec_A_tab_gpu,rec_A_tab_2_gpu,kpm_rho_neq_tau_gpu,kpm_position_operator_gpu,kpm_angular_momentum_gpu_c,kpm_sigma_time_orbital_c,kpm_msd_gpu_c
 from jclsquant.cython_modules.Extra_funs import table_G_delta
 
-from minijclsquant.modifiers import *
-from minijclsquant.kernel_and_moments import *
-from minijclsquant.constants import *
-from minijclsquant.hams import *
-from minijclsquant.observables import *
+from jclsquant.modifiers import *
+from jclsquant.kernel_and_moments import *
+from jclsquant.constants import *
+from jclsquant.hams import *
+from jclsquant.observables import *
 
 
 ## Density of states (dos)

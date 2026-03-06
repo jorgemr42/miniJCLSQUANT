@@ -1,7 +1,7 @@
 import scipy as sci
 import numpy as np
-from minijclsquant.cython_modules.blas_funs import vdot,axpy2 # type: ignore
-from minijclsquant.cython_modules.blas_funs import aAxby # type: ignore
+from jclsquant.cython_modules.blas_funs import vdot,axpy2 # type: ignore
+from jclsquant.cython_modules.blas_funs import aAxby # type: ignore
 
 
 

@@ -20,9 +20,9 @@ from scipy.integrate import cumulative_trapezoid as cumtrapz
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 
-from minijclsquant.constants import *
+from jclsquant.constants import *
 import matplotlib
-from minijclsquant.kernel_and_moments import *
+from jclsquant.kernel_and_moments import *
 
 
 

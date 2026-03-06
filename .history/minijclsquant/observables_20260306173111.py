@@ -5,13 +5,13 @@ from time import perf_counter
 import copy
 from tqdm import tqdm
 from math import pi,sqrt
-from minijclsquant.kernel_and_moments import *
-from minijclsquant.recurrence_functions import *
-from minijclsquant.minimizer_thermal import *
-from minijclsquant.ell_matrix import *
+from jclsquant.kernel_and_moments import *
+from jclsquant.recurrence_functions import *
+from jclsquant.minimizer_thermal import *
+from jclsquant.ell_matrix import *
 
-from minijclsquant.modifiers import *
-from minijclsquant.cython_modules.blas_funs import dot,axpy2,vdot # type: ignore
+from jclsquant.modifiers import *
+from jclsquant.cython_modules.blas_funs import dot,axpy2,vdot # type: ignore
 from .constants import *
 
 
@@ -250,7 +250,7 @@ def kpm_rho_neq(H,t_vec=None,tau=None,modifier_id=None,modifier_params=None,Temp
                     n_mat[k_n,:],dos_n_mat[k_n,:]=kpm_n_dos_n(H_time,M_n,U,F,False,proyector)
                 
                 k_n+=1
-
+                
     if k_n>=0 :
         return n_mat,dos_n_mat
     else:

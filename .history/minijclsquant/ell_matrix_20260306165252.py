@@ -5,10 +5,10 @@ import copy
 from math import pi,sqrt
 import joblib
 
-from minijclsquant.cython_modules.blas_funs import aAxby # type: ignore
+from jclsquant.cython_modules.blas_funs import aAxby # type: ignore
 from jclsquant.cython_modules.Extra_funs import data_indices_c,data_indices_c_0 # type: ignore
 import os
-from minijclsquant.hams import *
+from jclsquant.hams import *
     
 
 ### ELL to CSR matrix

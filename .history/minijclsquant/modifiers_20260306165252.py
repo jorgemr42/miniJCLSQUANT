@@ -6,9 +6,9 @@ from time import perf_counter
 import copy
 from math import pi,sqrt
 import random
-from minijclsquant.cython_modules.blas_funs import axpy,scal,vec_mul,vec_mul3,vec_mul2,axpy2
+from jclsquant.cython_modules.blas_funs import axpy,scal,vec_mul,vec_mul3,vec_mul2,axpy2
 from jclsquant.cython_modules.Extra_funs import light_modifier_cython,diagonal_modifier,electron_hole_pud,electron_hole_pud3d,hopping_pos_phonons_modifier
-from minijclsquant.ell_matrix import *
+from jclsquant.ell_matrix import *
 import matplotlib.pyplot as plt
 
 def modifier_bounds(A):
