@@ -59,14 +59,12 @@ def kpm_dos(H,M=None,random_vector=None):
 def kpm_n_dos_n(H,M=None,random_vector_l=None,random_vector_r=None,bounds=True,proyector=None):
     """
     Def:
-        Density of states using KPM with a different random vector for the ket and the bra vector.
+        Mean value of the DOS making the table and the sum the moments
     Inputs:
         H : Hamiltonian in ELL format.
         M : (hidden) Number of moments.
-        random_vector : (hidden) random vector multiplied by the left , by default is computed as expected.
-        random_vector : (hidden) random vector multiplied by the right, by default is computed as expected.
+        random_vector : (hidden) random vector , by default is computed as expected.
         bounds : (hidden) If you want to reescalate the Hamiltonian inside the funciton by default is True .
-        proyector : (hidden) If you want to compute the right random vector by an ELL matrix before doing the DOS, by default is None .
     Outputs:
         delta_mat: Array of shape (len(Ef_vec),2) where [:,0] are the unormalized Fermi energies and [:,1] the DOS.
     """
@@ -114,7 +112,6 @@ def kpm_n_dos_n(H,M=None,random_vector_l=None,random_vector_r=None,bounds=True,p
 
 
     for i in range(len(Ef_vec)):
-
         dos_n_mat[i,1]=np.real(dot(1+0j,moments_delta(Ef_vec[i]/(0.5*(H.bounds[1]-H.bounds[0]))-(0.5*(H.bounds[1]+H.bounds[0]))/(0.5*(H.bounds[1]-H.bounds[0])),M).astype(np.complex128)*JacksonKernel(M).astype(np.complex128),dos_n_vec,M,H.n_threads))
         n_mat[i,1]=dos_n_mat[i,1]/np.real(dot(1+0j,moments_delta(Ef_vec[i]/(0.5*(H.bounds[1]-H.bounds[0]))-(0.5*(H.bounds[1]+H.bounds[0]))/(0.5*(H.bounds[1]-H.bounds[0])),M).astype(np.complex128)*JacksonKernel(M).astype(np.complex128),tr_n_vec,M,H.n_threads))
 
@@ -123,31 +120,28 @@ def kpm_n_dos_n(H,M=None,random_vector_l=None,random_vector_r=None,bounds=True,p
 
 
 
-def kpm_rho_neq(H,t_vec=None,tau=None,modifier_id=None,modifier_params=None,Temp=None,mu=None,observale_list=None,M=None,random_vector=None,proyector=None):
+def kpm_rho_neq(H,t_vec=None,tau=None,modifier_id=None,modifier_params=None,Temp=None,mu=None,observale_list=None,M=None,random_vector=None,dos_equil=None,proyector=None):
     """
     Def:
-        Time-evolution of the density matrix even if tau!=0 it does not include the relaxation.
+        Time-evolution of the density matrixeven if tau!=0 it does not include the relaxation.
     Inputs:
-        H: Hamiltonian in ELL.
+        H: Hamiltonian in CSR or ELL.
         t_vec : (hidden) time vector in fs.
         tau : (hidden) Relaxation time in fs by default in 0 even if !=0 this function does not include the minimization .
         modifier_id : (hidden) Choosing the light type linear , circle , linear packed , circle packed . 
         modifier_params : (hidden) Parameters that enter into the modifier .
         Temp : (hidden) Temperature in Kelvin .
-        mu : (hidden) Chemical potential by default set to 0 eV .
+        Temp_equil : (hidden) Temperature in Kelvin towards the system will relax only matters if tau!=0 .
+        Ef : (hidden) Fermi velocity by default set to 0 eV .
         observable_list : a list of the following form [[observable_id,n_meass,observable_params],...]
         M : (hidden) number of moments of the KPM expansion by default set to int(sqrt(N)).
         random_vector: (hidden) random vector , by default is computed as expected.
-        proyector: (hidden) if you want to multiply before doing the n_dos by a proyector, by defualt is None.
+        
     Outputs:
-        If you have introduced n operator:
-            n_mat: number of carriers with shape (n_meass,2*M_n+1,2) 
-            dos_n_mat: Non-equilibrium density of states with shape (n_meass,2*M_n+1,2).
-        If no operator is introduced:
-            F_t0 : Density matrix at t=0 .
-            U_t0 : Time evolution operator at t=0 .
-            F : Density matrix at t=end .
-            U : Time evolution operator at t=end .
+        F_t0 : Density matrix at t=0 .
+        U_t0 : Time evolution operator at t=0 .
+        F : Density matrix at t=end .
+        F : Time evolution operator at t=end .
     """
 
     if M is None:
@@ -197,7 +191,7 @@ def kpm_rho_neq(H,t_vec=None,tau=None,modifier_id=None,modifier_params=None,Temp
 
     ### Unwrap of n computation 
     k_n=-1
-
+    k_sigma=-1
     for i in range(len(observale_list)):
 
         if observale_list[i][0] == 'n':
@@ -215,14 +209,32 @@ def kpm_rho_neq(H,t_vec=None,tau=None,modifier_id=None,modifier_params=None,Temp
             n_mat=np.zeros((n_meass,2*M_n+1,2))
             dos_n_mat=np.zeros((n_meass,2*M_n+1,2))
 
+        elif observale_list[i][0] == 'sigma_nequil':
+            sigma_meass=observale_list[i][1]
+            direction_1=observale_list[i][2]
+            direction_2=observale_list[i][3]
+            t_vec_sigma=observale_list[i][4]
+            M_sigma=observale_list[i][5]
+
+            if sigma_meass>1:
+                sigma_meass_vec=np.linspace(0,len(t_vec)-1,sigma_meass,dtype=int)
+            else:
+                sigma_meass_vec=np.array([len(t_vec)-1],dtype=int)
+            
+            k_sigma=0
+            sigma_vec=np.zeros((sigma_meass,len(t_vec_sigma)),dtype=np.complex128)
+    
         else:
             k_n=-1
+            k_sigma=-1
+            print('There is no observable selected the function will return F(t=0) , U(t=0) , F(t=end) and U(t=end) .')
 
 
     ## Time evolution
     H_time=H_kpm.deep_copy()
 
-    for i in range(len(t_vec)):
+    aux=np.zeros(len(random_vector),dtype=np.complex128)
+    for i in tqdm(range(len(t_vec))):
 
         H_time.modifier_nocop(H_kpm,modifier_hoppings_c,modifier_id,modifier_params,t_vec[i])
         
@@ -232,27 +244,69 @@ def kpm_rho_neq(H,t_vec=None,tau=None,modifier_id=None,modifier_params=None,Temp
             F=rec_A_vec(M,H_time,moments_kernel_FD,random_vector)
             F_t0=F
             U_t0=U
+            if tau!=0:
+                H_time.dot(1+0j,0+0j,F,aux)
+                E_0=2*H_time.bounds[1]*np.real(vdot(1+0j,random_vector,aux,len(random_vector),H_time.n_threads))
+                moments_kernel_FD_equil=moments_FD_T(mu/H.bounds[1],Temp*kb/H.bounds[1],M)*JacksonKernel(M)
         
         else:
             if tau==0:
 
                 U=rec_A_vec(M2,H_time,moments_U_vec,U)
                 F=rec_A_vec(M2,H_time,moments_U_vec,F)
+
+            else:
+
+
+                U=rec_A_vec(M2,H_time,moments_U_vec,U)
+                F=rec_A_vec(M2,H_time,moments_U_vec,F)
+
+
+                if i%(len(t_vec)//20)==0:
+                    H_time.dot(1+0j,0+0j,F,aux)
+                    E_t=2*H_time.bounds[1]*np.real(vdot(1+0j,U,aux,len(U),H_time.n_threads))
+                    deltaE=(E_t-E_0)/H.shape[0]
+
+                    mu,Temp=minimization(deltaE,dos_equil,[mu,Temp*kb],niter=10000)
+
+                    print('Chemical potential : '+str(mu)+' [eV]')
+                    print('Temperature : '+str(Temp)+' [K]')
+
+                    E_0=E_t
+                    moments_kernel_FD_equil=moments_FD_T(mu/H.bounds[1],Temp*kb/H.bounds[1],M)*JacksonKernel(M)
+
+
+                axpy2((delta_t/tau),(1-delta_t/tau),rec_A_vec(M,H_time,moments_kernel_FD_equil,U),F,len(F),H.n_threads)
+                
+
     
         if k_n >= 0:
             if i == n_meass_vec[k_n]:
-
+                print('Computing dos : '+str(k_n))
                 if k_n==0 and n_meass>1:
+                    _,dos_f=kpm_n_dos_n(H_time,M_n,F,F,False)
+                    _,dos_u=kpm_n_dos_n(H_time,M_n,U,U,False)
 
                     n_mat[k_n,:],dos_n_mat[k_n,:]=kpm_n_dos_n(H_kpm,M_n,U,F,False,proyector)
                 else:
+                    _,dos_f=kpm_n_dos_n(H_time,M_n,F,F,False)
+                    _,dos_u=kpm_n_dos_n(H_time,M_n,U,U,False)
   
+
                     n_mat[k_n,:],dos_n_mat[k_n,:]=kpm_n_dos_n(H_time,M_n,U,F,False,proyector)
                 
                 k_n+=1
-                
-    if k_n>=0 :
+
+
+
+    if k_n>=0 and k_sigma<0:
         return n_mat,dos_n_mat
+    elif k_n<0 and k_sigma>=0:
+        return sigma_vec
+    elif k_n>=0 and k_sigma>=0:
+        print('Final Temperature : '+str(Temp)+' [K]')
+        print('Final Chemical potential : '+str(mu)+' [eV]')
+        return n_mat,dos_n_mat,sigma_vec
     else:
         return F_t0,U_t0,F,U
     

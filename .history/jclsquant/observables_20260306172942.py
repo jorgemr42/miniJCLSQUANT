@@ -242,15 +242,23 @@ def kpm_rho_neq(H,t_vec=None,tau=None,modifier_id=None,modifier_params=None,Temp
         if k_n >= 0:
             if i == n_meass_vec[k_n]:
 
+                print('Computing dos : '+str(k_n))
+
                 if k_n==0 and n_meass>1:
+                    _,dos_f=kpm_n_dos_n(H_time,M_n,F,F,False)
+                    _,dos_u=kpm_n_dos_n(H_time,M_n,U,U,False)
 
                     n_mat[k_n,:],dos_n_mat[k_n,:]=kpm_n_dos_n(H_kpm,M_n,U,F,False,proyector)
                 else:
+                    _,dos_f=kpm_n_dos_n(H_time,M_n,F,F,False)
+                    _,dos_u=kpm_n_dos_n(H_time,M_n,U,U,False)
   
+
                     n_mat[k_n,:],dos_n_mat[k_n,:]=kpm_n_dos_n(H_time,M_n,U,F,False,proyector)
                 
                 k_n+=1
-                
+
+
     if k_n>=0 :
         return n_mat,dos_n_mat
     else:
