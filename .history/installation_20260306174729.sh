@@ -24,9 +24,8 @@ if [[ "$choice" == "cpu" ]]; then
     pwd
     sed -i '/from minijclsquant\.observables_gpu import \*/d' __init__.py
     rm -r ./cuda_cython
-    pwd
     echo "Line removed for CPU mode."
-    
+
 elif [[ "$choice" == "gpu" ]]; then
     echo "Using GPU."
     read -p "Enter the compute capability number (e.g., 89 for sm_89) you can check in https://developer.nvidia.com/cuda-gpus : " SM

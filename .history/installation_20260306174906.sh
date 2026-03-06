@@ -24,7 +24,6 @@ if [[ "$choice" == "cpu" ]]; then
     pwd
     sed -i '/from minijclsquant\.observables_gpu import \*/d' __init__.py
     rm -r ./cuda_cython
-    pwd
     echo "Line removed for CPU mode."
     
 elif [[ "$choice" == "gpu" ]]; then
