@@ -140,6 +140,7 @@ def kpm_rho_neq(H,t_vec=None,tau=None,modifier_id=None,modifier_params=None,Temp
         proyector: (hidden) if you want to multiply before doing the n_dos by a proyector, by defualt is None.
     Outputs:
         If you have introduced n operator:
+            n_mat: number of carriers with shape (n_meass,2*M_n+1,2) 
             dos_n_mat: Non-equilibrium density of states with shape (n_meass,2*M_n+1,2).
         If no operator is introduced:
             F_t0 : Density matrix at t=0 .
