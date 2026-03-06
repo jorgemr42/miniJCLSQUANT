@@ -1,0 +1,7 @@
+numpy
+scipy
+cython
+icecream
+matplotlib
+scikit-optimize
+joblib

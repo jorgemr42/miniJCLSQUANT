@@ -1,0 +1,15 @@
+Metadata-Version: 2.4
+Name: jclsquant
+Version: 2
+Summary: Jorge Martinez Romeral version of LSQUANT including some BLAS functions and hamiltonian modifiers in C++ plus its veresions in cuda
+Author: Jorge Martinez Romeral
+Requires-Dist: numpy
+Requires-Dist: scipy
+Requires-Dist: cython
+Requires-Dist: icecream
+Requires-Dist: matplotlib
+Requires-Dist: scikit-optimize
+Requires-Dist: joblib
+Dynamic: author
+Dynamic: requires-dist
+Dynamic: summary

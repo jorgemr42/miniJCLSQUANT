@@ -1,0 +1,10 @@
+hbar=6.582e-16 # in [eV*s]
+kb=8.617333*1e-5 #in [ev*K^-1]
+epsilon_0=55.26349406e-3 #In [e**2/(eV*nm)]
+c=3e17 #In [nm/s]
+e=1.60217663e-19 # In Coulombs
+hbar_fs=hbar*1e15 #in [eV*fs]
+vf_nm_fs=0.8737422664298289 # in nm/fs
+a_cc=0.14199929870718847 # in nm
+mub_ev_T=5.7883817982e-5 #in eV/T
+L_prefactor=1e-18*e/(4*9.274e-24*hbar)
