@@ -344,6 +344,7 @@ def kpm_harmonics(H,t_vec=None,tau=None,modifier_id=None,modifier_params=None,Te
 
     ### Unwrap of n computation 
     k_n=-1
+    k_h=-1
 
     for i in range(len(observale_list)):
 
@@ -361,6 +362,7 @@ def kpm_harmonics(H,t_vec=None,tau=None,modifier_id=None,modifier_params=None,Te
 
             n_mat=np.zeros((n_meass,2*M_n+1,2))
             dos_n_mat=np.zeros((n_meass,2*M_n+1,2))
+            t_vec_meass_n=[]
 
         elif observale_list[i][0] == 'h':
             
@@ -375,6 +377,7 @@ def kpm_harmonics(H,t_vec=None,tau=None,modifier_id=None,modifier_params=None,Te
 
             harmonic_vector_x=np.zeros(h_meass,dtype=np.complex128)
             harmonic_vector_y=np.zeros(h_meass,dtype=np.complex128)
+            t_vec_meass_h=[]
 
         else:
             k_n=-1
@@ -415,7 +418,11 @@ def kpm_harmonics(H,t_vec=None,tau=None,modifier_id=None,modifier_params=None,Te
                     
                     dos=kpm_n_dos_n(H_kpm,M_n,U,U,False,proyector)
                     
-                    n_mat[k_n,:,1]=n_mat[k_n,:,1]/dos[:,1]                                     
+                    n_mat[k_n,:,1]=n_mat[k_n,:,1]/dos[:,1]
+
+                    t_vec_meass_n.append(t_vec[i])
+
+
                 else:
   
                     dos_n_mat[k_n,:]=kpm_n_dos_n(H_time,M_n,U,F,False,proyector)
@@ -424,7 +431,9 @@ def kpm_harmonics(H,t_vec=None,tau=None,modifier_id=None,modifier_params=None,Te
                     
                     dos=kpm_n_dos_n(H_time,M_n,U,U,False,proyector)
 
-                    n_mat[k_n,:,1]=n_mat[k_n,:,1]/dos[:,1]                                     
+                    n_mat[k_n,:,1]=n_mat[k_n,:,1]/dos[:,1]   
+                    t_vec_meass_n.append(t_vec[i])
+
                 k_n+=1
 
         if k_h >= 0:
@@ -439,6 +448,7 @@ def kpm_harmonics(H,t_vec=None,tau=None,modifier_id=None,modifier_params=None,Te
                 
                     V2.dot(1+0j,0+0j,F,aux)
                     harmonic_vector_y[k_h]=vdot(1+0j,U,aux,len(U),H_time.n_threads)
+                    t_vec_meass_h.append(t_vec[i])
                 
                                 
                 else:
@@ -450,15 +460,16 @@ def kpm_harmonics(H,t_vec=None,tau=None,modifier_id=None,modifier_params=None,Te
                 
                     V2.dot(1+0j,0+0j,F,aux)
                     harmonic_vector_y[k_h]=vdot(1+0j,U,aux,len(U),H_time.n_threads)
+                    t_vec_meass_h.append(t_vec[i])
                   
                 k_h+=1
         
     if k_n>=0 and k_h>=0:
-        return n_mat,dos_n_mat,harmonic_vector_x,harmonic_vector_y
+        return n_mat,dos_n_mat,t_vec_meass_n,harmonic_vector_x,harmonic_vector_y,t_vec_meass_h
     if k_n>=0 :
-        return n_mat,dos_n_mat
+        return n_mat,dos_n_mat,t_vec_meass_n
     if k_h>=0:
-        return harmonic_vector_x,harmonic_vector_y
+        return harmonic_vector_x,harmonic_vector_y,t_vec_meass_h
     else:
         return F_t0,U_t0,F,U
 
