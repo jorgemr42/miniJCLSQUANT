@@ -270,6 +270,196 @@ def kpm_rho_neq(H,t_vec=None,tau=None,modifier_id=None,modifier_params=None,Temp
 
 
 
+def kpm_harmonics(H,t_vec=None,tau=None,modifier_id=None,modifier_params=None,Temp=None,mu=None,observale_list=None,M=None,random_vector=None,proyector=None):
+    """
+    Def:
+        Time-evolution of the density matrix even if tau!=0 it does not include the relaxation.
+    Inputs:
+        H: Hamiltonian in ELL.
+        t_vec : (hidden) time vector in fs.
+        tau : (hidden) Relaxation time in fs by default in 0 even if !=0 this function does not include the minimization .
+        modifier_id : (hidden) Choosing the light type linear , circle , linear packed , circle packed . 
+        modifier_params : (hidden) Parameters that enter into the modifier .
+        Temp : (hidden) Temperature in Kelvin .
+        mu : (hidden) Chemical potential by default set to 0 eV .
+        observable_list : a list of the following form [[observable_id,n_meass,observable_params],...]
+        M : (hidden) number of moments of the KPM expansion by default set to int(sqrt(N)).
+        random_vector: (hidden) random vector , by default is computed as expected.
+        proyector: (hidden) if you want to multiply before doing the n_dos by a proyector, by defualt is None.
+    Outputs:
+        If you have introduced n operator:
+            n_mat: number of carriers with shape (n_meass,2*M_n+1,2) 
+            dos_n_mat: Non-equilibrium density of states with shape (n_meass,2*M_n+1,2).
+        If no operator is introduced:
+            F_t0 : Density matrix at t=0 .
+            U_t0 : Time evolution operator at t=0 .
+            F : Density matrix at t=end .
+            U : Time evolution operator at t=end .
+    """
 
+    if M is None:
+        M=int(np.sqrt(H.shape[0]))
+    
+    if mu is None:
+        print('No Fermi energy has been included by default is set to 0 .')
+        mu=0
+    if random_vector is None:
+        random_vector=random_vector_generator(H.shape[0])
+
+    if t_vec is None:
+        print('No time vector has been inserted by default is set from 0 to 5*tau_phi with tau_phi=hbar*M/(pi*bounds[1]) with tau_phi/100 steps')
+        t_vec=np.linspace(0,5*hbar_fs*M/(pi*H.bounds[1]),500)
+    if Temp is None:
+        print('No temperature inserted by default is set to zero.')
+        moments_kernel_FD=moments_FD_T0(0,M)*JacksonKernel(M)
+    if modifier_params is None:
+        print('You must introduce an array that contains the elements necesary to apply the time evolution to the hamiltonian .')
+        return
+    if modifier_id is None:
+        print('You must introduce an string with one of the following : linear , circle , linear packed , circle packed .')
+        return
+
+    ### Moments for time evolution
+    delta_t=t_vec[1]
+    # delta_t_kpm=delta_t*(0.5*(H.bounds[1]-H.bounds[0]))/hbar_fs
+    delta_t_kpm=delta_t*H.bounds[1]/hbar_fs
+    moments_U_vec=moments_U(delta_t_kpm,M)
+
+    m=0
+    while np.abs(moments_U_vec[m])>1e-15:
+        m+=1
+    M2=m
+
+    moments_U_vec=moments_U(delta_t_kpm,M2)
+
+    ### Reescalating the Hamiltonian and moments for the FD
+    H_kpm=H.modifier(modifier_bounds)
+    
+
+    if Temp==0:
+        moments_kernel_FD=moments_FD_T0((mu-(0.5*(H.bounds[1]+H.bounds[0])))/(0.5*(H.bounds[1]-H.bounds[0])),M)*JacksonKernel(M)
+    else:
+        # moments_kernel_FD=moments_FD_T((mu-(0.5*(H.bounds[1]+H.bounds[0])))/(0.5*(H.bounds[1]-H.bounds[0])),((Temp*kb))/(0.5*(H.bounds[1]-H.bounds[0])),M)*JacksonKernel(M)
+        moments_kernel_FD=moments_FD_T((mu)/(0.5*(H.bounds[1]-H.bounds[0])),((Temp*kb))/(0.5*(H.bounds[1]-H.bounds[0])),M)*JacksonKernel(M)
+
+    ### Unwrap of n computation 
+    k_n=-1
+
+    for i in range(len(observale_list)):
+
+        if observale_list[i][0] == 'n':
+            
+            n_meass=observale_list[i][1]
+            M_n=observale_list[i][2]
+
+            if n_meass>1:
+                n_meass_vec=np.linspace(0,len(t_vec)-1,n_meass,dtype=int)
+            else:
+                n_meass_vec=np.array([len(t_vec)-1],dtype=int)
+
+            k_n=0
+
+            n_mat=np.zeros((n_meass,2*M_n+1,2))
+            dos_n_mat=np.zeros((n_meass,2*M_n+1,2))
+
+        if observale_list[i][0] == 'h':
+            
+            h_meass=observale_list[i][1]
+
+            if h_meass>1:
+                h_meass_vec=np.linspace(0,len(t_vec)-1,h_meass,dtype=int)
+            else:
+                h_meass_vec=np.array([len(t_vec)-1],dtype=int)
+
+            k_h=0
+
+            harmonic_vector_x=np.zeros(h_meass,dtype=np.complex128)
+            harmonic_vector_y=np.zeros(h_meass,dtype=np.complex128)
+
+        else:
+            k_n=-1
+            k_h=-1
+
+
+    ## Time evolution
+    H_time=H_kpm.deep_copy()
+
+    # Some auxiliary vector that we will use sometimes
+    aux=np.zeros(len(random_vector),dtype=np.complex128)
+
+    for i in range(len(t_vec)):
+
+        H_time.modifier_nocop(H_kpm,modifier_hoppings_c,modifier_id,modifier_params,t_vec[i])
+        
+        if i==0:
+
+            U=np.copy(random_vector)
+            F=rec_A_vec(M,H_time,moments_kernel_FD,random_vector)
+            F_t0=F
+            U_t0=U
+        
+        else:
+            if tau==0:
+
+                U=rec_A_vec(M2,H_time,moments_U_vec,U)
+                F=rec_A_vec(M2,H_time,moments_U_vec,F)
+    
+        if k_n >= 0:
+            if i == n_meass_vec[k_n]:
+
+                if k_n==0 and n_meass>1:
+
+                    dos_n_mat[k_n,:]=kpm_n_dos_n(H_kpm,M_n,U,F,False,proyector)
+
+                    n_mat[k_n,:]=dos_n_mat[k_n,:]
+                    
+                    dos=kpm_n_dos_n(H_kpm,M_n,U,U,False,proyector)
+                    
+                    n_mat[k_n,:,1]=n_mat[k_n,:,1]/dos[:,1]                                     
+                else:
+  
+                    dos_n_mat[k_n,:]=kpm_n_dos_n(H_time,M_n,U,F,False,proyector)
+                    
+                    n_mat[k_n,:]=dos_n_mat[k_n,:]
+                    
+                    dos=kpm_n_dos_n(H_time,M_n,U,U,False,proyector)
+
+                    n_mat[k_n,:,1]=n_mat[k_n,:,1]/dos[:,1]                                     
+                k_n+=1
+
+        if k_h >= 0:
+            if i == h_meass_vec[k_h]:
+
+                if k_h==0 and h_meass>1:
+                    V1 = H_kpm.modifier(modifier_velocity,'x')
+                    V2 = H_kpm.modifier(modifier_velocity,'y')
+
+                    V1.dot(1+0j,0+0j,F,aux)
+                    harmonic_vector_x[k_h]=vdot(1+0j,U,aux,len(U),H_time.n_threads)
+                
+                    V2.dot(1+0j,0+0j,F,aux)
+                    harmonic_vector_y[k_h]=vdot(1+0j,U,aux,len(U),H_time.n_threads)
+                
+                                
+                else:
+                    V1 = H_time.modifier(modifier_velocity,'x')
+                    V2 = H_time.modifier(modifier_velocity,'y')
+                    
+                    V1.dot(1+0j,0+0j,F,aux)
+                    harmonic_vector_x[k_h]=vdot(1+0j,U,aux,len(U),H_time.n_threads)
+                
+                    V2.dot(1+0j,0+0j,F,aux)
+                    harmonic_vector_y[k_h]=vdot(1+0j,U,aux,len(U),H_time.n_threads)
+                  
+                k_h+=1
+        
+    if k_n>=0 and k_h>=0:
+        return n_mat,dos_n_mat,harmonic_vector_x,harmonic_vector_y
+    if k_n>=0 :
+        return n_mat,dos_n_mat
+    if k_h>=0:
+        return harmonic_vector_x,harmonic_vector_y
+    else:
+        return F_t0,U_t0,F,U
 
 
