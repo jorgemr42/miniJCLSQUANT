@@ -362,7 +362,7 @@ def kpm_harmonics(H,t_vec=None,tau=None,modifier_id=None,modifier_params=None,Te
             n_mat=np.zeros((n_meass,2*M_n+1,2))
             dos_n_mat=np.zeros((n_meass,2*M_n+1,2))
 
-        if observale_list[i][0] == 'h':
+        elif observale_list[i][0] == 'h':
             
             h_meass=observale_list[i][1]
 
