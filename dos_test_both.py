@@ -6,6 +6,9 @@ import numpy as np
 from time import perf_counter
 from math import pi,sqrt
 import scipy as sci
+
+print('Test')
+
 N=2**(3+15)
 
 
