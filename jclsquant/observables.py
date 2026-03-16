@@ -210,9 +210,10 @@ def kpm_rho_neq(H,t_vec=None,tau=None,modifier_id=None,modifier_params=None,Temp
                 n_meass_vec=np.array([len(t_vec)-1],dtype=int)
 
             k_n=0
-            
+
             n_mat=np.zeros((n_meass,2*M_n+1,2))
             dos_n_mat=np.zeros((n_meass,2*M_n+1,2))
+            t_vec_meass_n=[]
 
         else:
             k_n=-1
@@ -250,7 +251,8 @@ def kpm_rho_neq(H,t_vec=None,tau=None,modifier_id=None,modifier_params=None,Temp
                     
                     dos=kpm_n_dos_n(H_kpm,M_n,U,U,False,proyector)
                     
-                    n_mat[k_n,:,1]=n_mat[k_n,:,1]/dos[:,1]                                     
+                    n_mat[k_n,:,1]=n_mat[k_n,:,1]/dos[:,1] 
+                    t_vec_meass_n.append(t_vec[i])                                   
                 else:
   
                     dos_n_mat[k_n,:]=kpm_n_dos_n(H_time,M_n,U,F,False,proyector)
@@ -259,11 +261,13 @@ def kpm_rho_neq(H,t_vec=None,tau=None,modifier_id=None,modifier_params=None,Temp
                     
                     dos=kpm_n_dos_n(H_time,M_n,U,U,False,proyector)
 
-                    n_mat[k_n,:,1]=n_mat[k_n,:,1]/dos[:,1]                                     
+                    n_mat[k_n,:,1]=n_mat[k_n,:,1]/dos[:,1] 
+                    t_vec_meass_n.append(t_vec[i])                                   
+
                 k_n+=1
 
     if k_n>=0 :
-        return n_mat,dos_n_mat
+        return n_mat,dos_n_mat,t_vec_meass_n
     else:
         return F_t0,U_t0,F,U
     

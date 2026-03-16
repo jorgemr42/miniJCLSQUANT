@@ -165,6 +165,6 @@ def H_graphene(positions, t,m=0,W=0,periodic=True,type_H='CSR'):
         H_ell.Omega=Lx*Ly
         return H_ell
     elif type_H=='CSR':
-        return H,Dx,Dy,Lx*Ly,conjugate_mat
+        return H,Dx,Dy,Lx*Ly,conjugate_mat.data
 # Graphene hamiltonian only 1st NN
 
